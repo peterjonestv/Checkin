@@ -35,7 +35,6 @@
             max-width: 700px; /* Kept at a reasonable max width for overall page balance */
             height: auto; /* Allow height to be determined by aspect ratio and width */
             aspect-ratio: 9 / 16; /* Set aspect ratio to 9:16 (portrait) */
-
             background-color: #000;
             border-radius: 10px;
             overflow: hidden;
@@ -62,63 +61,67 @@
             position: absolute;
             left: 50%; /* Center horizontally */
             transform: translateX(-50%); /* Adjust for its own width */
-            background-color: rgba(255, 255, 255, 0.3); /* Made slightly more opaque (0.3 alpha) */
-            border: 1px dashed rgba(255, 255, 255, 0.5); /* Dashed border for visibility */
-            z-index: 10; /* Ensure it's above the video */
-            pointer-events: none; /* Allow clicks to pass through to video */
-            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+            background-color: rgba(255, 255, 255, 0.3);
+            border: 1px dashed rgba(255, 255, 255, 0.5);
+            z-index: 10;
+            pointer-events: none;
+            box-sizing: border-box;
         }
 
-        /* Viewport Shoot Buttons (positioned independently) */
-        .shoot-button {
-            position: absolute;
-            bottom: 25px; /* Distance from bottom */
-            width: 60px; /* Size of the button */
-            height: 60px; /* Size of the button */
-            border-radius: 50%; /* Make it circular */
-            background-color: #dc3545; /* Red color */
-            color: white; /* White icon color */
-            font-size: 2em; /* Size of the camera icon */
+        /* [MODIFIED] Styling for the main capture controls container */
+        #captureControls {
             display: flex;
             justify-content: center;
             align-items: center;
-            border: 3px solid white; /* White border */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); /* Shadow for depth */
+            gap: 25px;
+            margin: 0 0 20px 0;
+            width: 95%;
+            max-width: 700px;
+            flex-wrap: wrap; /* Allows controls to wrap on smaller screens */
+        }
+
+        /* [MODIFIED] Shoot button is now a flex item, not absolutely positioned */
+        .shoot-button {
+            width: 70px; /* Slightly larger */
+            height: 70px;
+            border-radius: 50%;
+            background-color: #dc3545;
+            color: white;
+            font-size: 2.5em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 4px solid white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
             cursor: pointer;
-            z-index: 30; /* Ensure it's above everything else */
+            z-index: 30;
             transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
-            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+            -webkit-tap-highlight-color: transparent;
+            /* Order property to place button in the middle */
+            order: 2;
         }
 
         .shoot-button:active {
-            background-color: #c82333; /* Darker red on active */
-            transform: scale(0.95); /* Slightly shrink on active */
-        }
-
-        #shootButtonLeft {
-            left: 25px; /* Position on the left */
-        }
-
-        #shootButtonRight {
-            right: 25px; /* Position on the right */
+            background-color: #c82333;
+            transform: scale(0.95);
         }
 
         /* Settings Overlay (input fields and number controls) */
         #settingsOverlay {
             position: absolute;
-            bottom: 10px; /* Slightly above the very bottom for padding */
+            bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 40px); /* Adjusted width to give side margins */
-            max-width: 500px; /* Max width for inputs */
+            width: calc(100% - 40px);
+            max-width: 500px;
             padding: 15px;
             box-sizing: border-box;
-            background-color: rgba(255, 255, 255, 0.85); /* Translucent white */
+            background-color: rgba(255, 255, 255, 0.85);
             border-radius: 10px;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            z-index: 25; /* Above video and guide */
+            z-index: 25;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
@@ -152,16 +155,15 @@
             border-color: #007bff;
         }
 
-        #settingsOverlay .number-control-group {
+        /* [MODIFIED] Number control group is now a flex item in #captureControls */
+        .number-control-group {
             display: flex;
             align-items: center;
-            gap: 0px; /* Tighter gap for +/- buttons */
-            margin-top: 5px; /* Little space above number controls */
-            width: auto; /* Allow content to dictate width, not stretch */
-            align-self: center; /* Center the group itself */
+            gap: 0px;
+            order: 1; /* Place to the left of the shoot button */
         }
 
-        #settingsOverlay .number-control-group button {
+        .number-control-group button {
             width: 45px;
             height: 45px;
             font-size: 1.8em;
@@ -178,11 +180,11 @@
             transition: background-color 0.2s ease-in-out;
         }
 
-        #settingsOverlay .number-control-group button:active {
+        .number-control-group button:active {
             background-color: #5a6268;
         }
 
-        #settingsOverlay #currentNumberDisplay {
+        #currentNumberDisplay {
             text-align: center;
             padding: 8px 10px;
             border: 1px solid #cdd4da;
@@ -195,23 +197,17 @@
             box-sizing: border-box;
         }
         
-        /* Toggle Switch Styling */
+        /* [MODIFIED] Toggle Switch is now a flex item in #captureControls */
         .toggle-switch {
             display: flex;
             align-items: center;
-            margin: 10px auto 0 auto; /* Auto margins to center horizontally */
-            padding-top: 10px;
-            border-top: 1px solid #eee;
-            width: auto; /* Allow content to dictate width */
-            gap: 10px; /* Space between label and switch */
-            white-space: nowrap; /* Prevent label wrapping */
+            gap: 10px;
+            order: 3; /* Place to the right of the shoot button */
         }
         .toggle-switch label {
             font-weight: bold;
             color: #333;
-            flex-grow: 1;
             cursor: pointer;
-            text-align: right; /* Align text to the right before switch */
         }
         .switch {
             position: relative;
@@ -271,40 +267,6 @@
             min-height: 20px;
         }
 
-        /* Responsive adjustments for smaller screens */
-        @media (max-width: 600px) {
-            #settingsOverlay {
-                padding: 10px;
-                width: calc(100% - 20px);
-            }
-            #settingsOverlay input[type="text"] {
-                font-size: 0.85em;
-            }
-            #settingsOverlay .number-control-group button {
-                width: 35px;
-                height: 40px;
-                font-size: 1.5em;
-            }
-            #settingsOverlay #currentNumberDisplay {
-                font-size: 1.2em;
-                min-width: 50px;
-            }
-            .shoot-button {
-                width: 50px;
-                height: 50px;
-                font-size: 1.8em;
-                bottom: 20px; /* Adjusted for consistency with new default */
-            }
-            #shootButtonLeft {
-                left: 20px; /* Adjusted for consistency with new default */
-            }
-            #shootButtonRight {
-                right: 20px; /* Adjusted for consistency with new default */
-            }
-            .toggle-switch {
-                padding-top: 8px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -315,9 +277,6 @@
         <div id="overlayGuide"></div> 
         <canvas id="photoCanvas"></canvas>
         
-        <button id="shootButtonLeft" class="shoot-button">&#128247;</button> 
-        <button id="shootButtonRight" class="shoot-button">&#128247;</button> 
-
         <div id="settingsOverlay">
             <div class="input-group">
                 <label for="orderNumberText">Order Number:</label>
@@ -333,34 +292,37 @@
                 <label for="noteText">Note (optional):</label>
                 <input type="text" id="noteText" placeholder="damaged etc" /> 
             </div>
+        </div>
+    </div>
+    
+    <div id="captureControls">
+        <button id="shootButton" class="shoot-button">&#128247;</button> 
 
-            <div class="number-control-group">
-                <button id="decrementNumber">-</button>
-                <span id="currentNumberDisplay">1</span> 
-                <button id="incrementNumber">+</button>
-            </div>
+        <div class="number-control-group">
+            <button id="decrementNumber">-</button>
+            <span id="currentNumberDisplay">1</span> 
+            <button id="incrementNumber">+</button>
+        </div>
 
-            <div class="toggle-switch">
-                <label for="toggleOverlay">Show Overlay on Photo?</label>
-                <label class="switch">
-                    <input type="checkbox" id="toggleOverlay" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
+        <div class="toggle-switch">
+            <label for="toggleOverlay">Overlay</label>
+            <label class="switch">
+                <input type="checkbox" id="toggleOverlay" checked>
+                <span class="slider"></span>
+            </label>
         </div>
     </div>
 
     <p id="message"></p>
 
     <script>
-        console.log("Script execution started."); // Very first log
+        console.log("Script execution started.");
 
         const cameraFeed = document.getElementById('cameraFeed');
         const photoCanvas = document.getElementById('photoCanvas');
         const overlayGuide = document.getElementById('overlayGuide'); 
         
-        const shootButtonLeft = document.getElementById('shootButtonLeft');
-        const shootButtonRight = document.getElementById('shootButtonRight');
+        const shootButton = document.getElementById('shootButton');
         
         const orderNumberText = document.getElementById('orderNumberText'); 
         const prefixText = document.getElementById('prefixText');
@@ -373,18 +335,14 @@
         let currentNumber = 1; 
         let currentFacingMode = 'environment'; 
 
-        // Define the target output resolution (for canvas sizing)
-        // These are max ideal dimensions for our canvas, actual video stream might be different.
         const TARGET_OUTPUT_WIDTH = 1080; 
         const TARGET_OUTPUT_HEIGHT = 1920; 
 
-        // Function to update the display and internal variable
         function updateNumberDisplay(newNumber) {
             currentNumber = Math.max(0, newNumber); 
             currentNumberDisplay.textContent = currentNumber;
         }
 
-        // Function to draw a rounded rectangle on the canvas - CONFIRMED CORRECT
         function roundRect(ctx, x, y, width, height, radius) {
             ctx.beginPath();
             ctx.moveTo(x + radius, y);
@@ -400,124 +358,55 @@
             ctx.fill();
         }
 
-        // Initialize display on load
         updateNumberDisplay(currentNumber);
 
-        // Function to start the camera with a specific facing mode - ROBUST FALLBACK STRATEGY & LOGGING
         async function startCamera(facingMode) {
             console.log("startCamera called with facingMode:", facingMode);
             if (cameraFeed.srcObject) {
-                console.log("Stopping existing camera tracks.");
                 cameraFeed.srcObject.getTracks().forEach(track => track.stop());
-                cameraFeed.srcObject = null; // Clear srcObject
+                cameraFeed.srcObject = null;
             }
-
-            // Strategy: Prioritize getting the ABSOLUTE HIGHEST resolution.
-            // No aspect ratio constraint here, as we want the camera's native best.
-            // The saved image will match this native resolution.
             const constraintOptions = [
-                // Option 1: Try a very high resolution (e.g., 4K-ish) regardless of aspect ratio initially
                 { video: { facingMode: facingMode, width: { ideal: 4096 }, height: { ideal: 4096 } } },
-                // Option 2: Try a high common resolution (e.g., Full HD)
                 { video: { facingMode: facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } } },
-                // Option 3: Try 1500x2000 specific resolution
-                { video: { facingMode: facingMode, width: { ideal: 1500 }, height: { ideal: 2000 } } },
-                // Option 4: Try a standard HD resolution
                 { video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } } },
-                // Option 5 (Most Compatible): Just facingMode, browser picks everything else.
                 { video: { facingMode: facingMode } }
             ];
-
             for (let i = 0; i < constraintOptions.length; i++) {
-                const constraints = constraintOptions[i];
-                console.log(`Attempting to get media with constraint option ${i + 1}:`, JSON.stringify(constraints.video));
                 try {
-                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    const stream = await navigator.mediaDevices.getUserMedia(constraintOptions[i]);
                     cameraFeed.srcObject = stream;
-                    
                     const videoTrack = stream.getVideoTracks()[0];
                     const settings = videoTrack.getSettings();
-                    const actualFacingMode = settings.facingMode || facingMode;
-                    currentFacingMode = actualFacingMode; 
-                    
-                    if (actualFacingMode === 'user') { 
-                        cameraFeed.style.transform = 'scaleX(-1)'; 
-                    } else {
-                        cameraFeed.style.transform = 'scaleX(1)'; 
-                    }
-
-                    await new Promise((resolve, reject) => {
-                        const timeout = setTimeout(() => {
-                            console.warn("loadedmetadata timeout after 5s during attempt.", i + 1);
-                            reject(new Error("loadedmetadata timeout"));
-                        }, 5000); 
-
-                        cameraFeed.onloadedmetadata = () => {
-                            clearTimeout(timeout);
-                            console.log("Camera metadata loaded successfully for attempt.", i + 1);
-                            resolve();
-                        };
-                        cameraFeed.onerror = (e) => { 
-                            clearTimeout(timeout); 
-                            console.error("Camera video element error during attempt:", i + 1, e);
-                            reject(new Error(`Video element error: ${e.message || e.code}`));
-                        };
-                    });
-                    
-                    messageElement.textContent = `Camera started (${actualFacingMode}). Actual resolution: ${settings.width}x${settings.height}. Ready!`;
-                    console.log(`Camera readyState: ${cameraFeed.readyState}`);
-                    
+                    currentFacingMode = settings.facingMode || facingMode;
+                    cameraFeed.style.transform = currentFacingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+                    await new Promise(resolve => cameraFeed.onloadedmetadata = resolve);
+                    messageElement.textContent = `Camera started. Actual resolution: ${settings.width}x${settings.height}. Ready!`;
                     updateOverlayGuidePosition(); 
-                    return; // Successfully started camera, exit function
+                    return;
                 } catch (err) {
                     console.error(`Attempt ${i + 1} failed: `, err.name, err.message);
-                    if (err.name === 'NotAllowedError') {
-                        messageElement.textContent = 'Camera access denied. Please enable camera permissions in your browser settings.';
-                        return; // Fatal permission error, stop all further attempts
-                    } else if (err.name === 'NotFoundError') {
-                        console.warn('No camera found for this constraint. Trying next option.');
-                    } else if (err.name === 'OverconstrainedError') {
-                        console.warn(`OverconstrainedError: ${err.message}. Trying next constraint option.`);
-                    } else {
-                        messageElement.textContent = `Camera error: ${err.message || err.name}.`;
-                        return; 
-                    }
                 }
             }
-            console.warn(`All constraint options failed for facingMode: ${facingMode}. Attempting to switch camera.`);
-            if (facingMode === 'user') { 
-                messageElement.textContent = 'Front camera failed. Trying rear camera.';
-                startCamera('environment'); 
-            } else { 
-                messageElement.textContent = 'Rear camera failed. Trying front camera.';
-                startCamera('user'); 
-            }
+            messageElement.textContent = 'Could not start camera. Please check permissions.';
         }
 
-
-        // Function to calculate overlay dimensions and position - ADJUSTED FOR SPACING
         function calculateOverlayMetrics(canvasWidth, canvasHeight, orderNum, prefix, shotNum, note) { 
-            // Create a temporary canvas context for accurate text measurement without drawing
             const tempCanvas = document.createElement('canvas');
             const tempContext = tempCanvas.getContext('2d');
 
-            // --- Font Sizes (From previous stable version) ---
             const numberFontSize = Math.max(80, Math.min(240, canvasWidth / 2.5)); 
-            const orderNumFontSize = Math.max(80, Math.min(240, canvasWidth / 2.5)); 
+            const orderNumFontSize = (Math.max(80, Math.min(240, canvasWidth / 2.5))) / 2; 
             const prefixFontSize = Math.max(18, Math.min(50, canvasWidth / 18)); 
             const noteFontSize = Math.max(20, Math.min(50, canvasWidth / 20)); 
 
-            // --- Adjusted Vertical Spacing ---
-            const baseLineHeightMultiplier = 1.1; /* Reverted to 1.1 for less aggressive tightening */
-            const spaceBetweenLines = Math.max(5, canvasHeight / 100); /* Reverted to 5, 100 */
+            const baseLineHeightMultiplier = 1.1;
+            const spaceBetweenLines = Math.max(5, canvasHeight / 100) * -0.5;
 
-            // Re-apply padding and margin values that were stable
             const textPaddingX = Math.max(15, canvasWidth / 75); 
             const textPaddingY = Math.max(12, canvasHeight / 100); 
             const canvasMargin = Math.max(30, canvasWidth / 25); 
 
-
-            // Measure elements
             tempContext.font = `bold ${numberFontSize}px Arial`; 
             const numberTextWidth = tempContext.measureText(shotNum).width;
             const numberLineHeight = numberFontSize * baseLineHeightMultiplier;
@@ -534,179 +423,105 @@
             const noteTextWidth = note ? tempContext.measureText(note).width : 0;
             const noteLineHeight = note ? (noteFontSize * baseLineHeightMultiplier) : 0;
             
-            // Calculate maxWidthForBoxContent based on all elements
             const maxWidthForBoxContent = Math.max(numberTextWidth, orderNumTextWidth, prefixTextWidth, noteTextWidth); 
             const tightBoxWidth = maxWidthForBoxContent + (textPaddingX * 2); 
 
             let totalTextHeight = 0;
             
-            // Calculate total height based on order: Number + space + OrderNum + space + (Prefix * lines) + space + Note
             totalTextHeight = numberLineHeight; 
             totalTextHeight += spaceBetweenLines + orderNumLineHeight; 
             
-            // Determine prefix lines for height calculation (needs current font size & available width)
             let linesForPrefixHeight = 1;
-            tempContext.font = `bold ${prefixFontSize}px Arial`; // Set font for measurement
+            tempContext.font = `bold ${prefixFontSize}px Arial`;
             const availableTextWidthForPrefix = tightBoxWidth - (textPaddingX * 2); 
-            const wordsForHeight = prefix.split(' ');
-            let currentLineTest = '';
-            for (let n = 0; n < wordsForHeight.length; n++) {
-                const testString = currentLineTest + wordsForHeight[n] + ' ';
-                if (tempContext.measureText(testString).width > (availableTextWidthForPrefix * 0.75) && n > 0) { 
-                    linesForPrefixHeight++;
-                    currentLineTest = wordsForHeight[n] + ' ';
-                } else {
-                    currentLineTest = testString;
-                }
+            if (tempContext.measureText(prefix).width > (availableTextWidthForPrefix * 0.75)) { 
+                linesForPrefixHeight = 2;
             }
-            if (linesForPrefixHeight > 2) linesForPrefixHeight = 2; // Cap at 2 lines for height calculation
 
             totalTextHeight += spaceBetweenLines + (prefixLineHeight * linesForPrefixHeight);
+            
+            // [MODIFIED] Use a normal, positive space for the note
             if (note) { 
-                totalTextHeight += spaceBetweenLines + noteLineHeight;
+                const normalSpace = Math.max(10, canvasHeight / 100);
+                totalTextHeight += normalSpace + noteLineHeight;
             }
             
             const boxHeight = totalTextHeight + (textPaddingY * 2);
-            
             const borderRadius = Math.max(15, canvasWidth / 40); 
-
             const guideBoxWidth = Math.max(tightBoxWidth, maxWidthForBoxContent * 3 + (textPaddingX * 2)); 
-
-            let bottomYOfOverlayBlock = canvasHeight - canvasMargin;
-            let boxY = bottomYOfOverlayBlock - boxHeight;
-
+            let boxY = canvasHeight - canvasMargin - boxHeight;
             const minAllowedY = (2/3) * canvasHeight;
             if (boxY < minAllowedY) {
-                const adjustment = minAllowedY - boxY;
-                boxY += adjustment;
-                bottomYOfOverlayBlock += adjustment; 
+                boxY = minAllowedY;
             }
-
             const tightBoxX = (canvasWidth / 2) - (tightBoxWidth / 2);
-            const guideBoxX = (canvasWidth / 2) - (tightBoxWidth / 2);
-
 
             return {
-                tightBoxX, tightBoxWidth, 
-                guideBoxX, guideBoxWidth, 
-                boxY, boxHeight, borderRadius,
+                tightBoxX, tightBoxWidth, guideBoxWidth, boxY, boxHeight, borderRadius,
                 orderNumFontSize, numberFontSize, prefixFontSize, noteFontSize, 
                 orderNumLineHeight, numberLineHeight, prefixLineHeight, noteLineHeight, 
-                textPaddingX, textPaddingY, spaceBetweenLines, 
-                actualPrefixLines: linesForPrefixHeight, 
-                bottomYOfOverlayBlock
+                textPaddingX, textPaddingY, spaceBetweenLines
             };
         }
 
-
-        // Function to update the position and size of the translucent overlay guide
         function updateOverlayGuidePosition() {
-            if (cameraFeed.videoWidth === 0 || cameraFeed.videoHeight === 0) {
-                overlayGuide.style.display = 'none'; 
-                return;
-            }
-
+            if (cameraFeed.videoWidth === 0) return;
             const videoRect = cameraFeed.getBoundingClientRect();
-            const videoWidth = videoRect.width;
-            const videoHeight = videoRect.height;
-
-            const currentOrderNum = orderNumberText.value; 
-            const currentPrefix = prefixText.value;
-            const currentNumberVal = currentNumber.toString();
-            const currentNote = noteText.value;
-
-            // Pass orderNum to calculateOverlayMetrics for guide
-            const metrics = calculateOverlayMetrics(videoWidth, videoHeight, currentOrderNum, currentPrefix, currentNumberVal, currentNote);
-
+            const metrics = calculateOverlayMetrics(videoRect.width, videoRect.height, orderNumberText.value, prefixText.value, currentNumber.toString(), noteText.value);
             overlayGuide.style.display = 'block';
             overlayGuide.style.width = `${metrics.guideBoxWidth}px`; 
             overlayGuide.style.height = `${metrics.boxHeight}px`;
             overlayGuide.style.top = `${metrics.boxY}px`; 
             overlayGuide.style.borderRadius = `${metrics.borderRadius}px`;
-
-            if (currentFacingMode === 'user') { 
-                overlayGuide.style.transform = 'translateX(-50%) scaleX(-1)';
-            } else {
-                overlayGuide.style.transform = 'translateX(-50%) scaleX(1)';
-            }
+            overlayGuide.style.transform = currentFacingMode === 'user' ? 'translateX(-50%) scaleX(-1)' : 'translateX(-50%) scaleX(1)';
         }
 
-        // Event listeners for number controls
-        decrementNumberButton.addEventListener('click', () => {
-            updateNumberDisplay(currentNumber - 1);
-            updateOverlayGuidePosition(); 
-        });
-
-        incrementNumberButton.addEventListener('click', () => {
-            updateNumberDisplay(currentNumber + 1);
-            updateOverlayGuidePosition(); 
-        });
-
-        // Listen for changes in inputs to update guide
+        decrementNumberButton.addEventListener('click', () => updateNumberDisplay(currentNumber - 1));
+        incrementNumberButton.addEventListener('click', () => updateNumberDisplay(currentNumber + 1));
         orderNumberText.addEventListener('input', updateOverlayGuidePosition); 
         prefixText.addEventListener('input', updateOverlayGuidePosition);
         noteText.addEventListener('input', updateOverlayGuidePosition);
-        // Listen for video resize events (e.g., orientation change)
         window.addEventListener('resize', updateOverlayGuidePosition);
         cameraFeed.addEventListener('loadeddata', updateOverlayGuidePosition); 
         cameraFeed.addEventListener('resize', updateOverlayGuidePosition); 
-
-        // Event listener for page visibility changes
         document.addEventListener('visibilitychange', () => {
-            console.log("Visibility changed to:", document.visibilityState);
-            if (document.visibilityState === 'visible') {
-                console.log("Page is visible. Attempting to restart camera.");
-                if (!cameraFeed.srcObject || cameraFeed.srcObject.getTracks().some(track => track.readyState === 'ended' || !track.enabled)) {
-                     startCamera(currentFacingMode); 
-                } else {
-                    console.log("Camera already seems active or preparing.");
-                }
-            } else { // Page is hidden
-                console.log("Page is hidden. Stopping camera tracks if active.");
-                if (cameraFeed.srcObject) {
-                    cameraFeed.srcObject.getTracks().forEach(track => track.stop());
-                    cameraFeed.srcObject = null; 
-                }
-            }
+            if (document.visibilityState === 'visible') startCamera(currentFacingMode);
         });
-
-        // pageshow event (more for history navigation, but good for robustness)
         window.addEventListener('pageshow', (event) => {
-            if (event.persisted) { // If restored from bfcache
-                console.log("Page restored from cache (pageshow). Attempting to restart camera.");
-                startCamera(currentFacingMode);
-            }
+            if (event.persisted) startCamera(currentFacingMode);
         });
 
-
-        // New function to handle photo capture (shared by both shoot buttons)
         function handlePhotoCapture() {
-            console.log("Photo capture process initiated.");
-            console.log(`Camera readyState on capture: ${cameraFeed.readyState}`); 
-
-            if (!cameraFeed.srcObject || cameraFeed.videoWidth === 0 || cameraFeed.readyState < 4) {
-                messageElement.textContent = 'Camera not ready yet. Please wait a moment or ensure permissions are granted.';
-                console.warn("Camera not ready for capture. State:", cameraFeed.readyState);
-                startCamera(currentFacingMode); 
+            if (!cameraFeed.srcObject || cameraFeed.videoWidth === 0) {
+                messageElement.textContent = 'Camera not ready. Please wait.';
                 return;
             }
-
             const context = photoCanvas.getContext('2d');
-
-            // Set canvas dimensions to match actual camera feed resolution (NATIVE SAVE)
-            photoCanvas.width = cameraFeed.videoWidth; 
-            photoCanvas.height = cameraFeed.videoHeight;
+            photoCanvas.width = TARGET_OUTPUT_WIDTH;
+            photoCanvas.height = TARGET_OUTPUT_HEIGHT;
             
+            const videoAspectRatio = cameraFeed.videoWidth / cameraFeed.videoHeight;
+            const targetAspectRatio = TARGET_OUTPUT_WIDTH / TARGET_OUTPUT_HEIGHT;
+            let sx, sy, sWidth, sHeight;
+            if (videoAspectRatio > targetAspectRatio) {
+                sHeight = cameraFeed.videoHeight;
+                sWidth = cameraFeed.videoHeight * targetAspectRatio;
+                sx = (cameraFeed.videoWidth - sWidth) / 2;
+                sy = 0;
+            } else {
+                sWidth = cameraFeed.videoWidth;
+                sHeight = cameraFeed.videoWidth / targetAspectRatio;
+                sy = (cameraFeed.videoHeight - sHeight) / 2;
+                sx = 0;
+            }
             context.save(); 
             if (currentFacingMode === 'user') { 
                 context.translate(photoCanvas.width, 0); 
                 context.scale(-1, 1); 
             }
-            context.drawImage(cameraFeed, 0, 0, photoCanvas.width, photoCanvas.height); 
+            context.drawImage(cameraFeed, sx, sy, sWidth, sHeight, 0, 0, photoCanvas.width, photoCanvas.height); 
             context.restore(); 
 
-
-            // --- Conditional Overlay Drawing ---
             let finalFilename = '';
             const orderNumber = orderNumberText.value; 
             const prefix = prefixText.value;
@@ -714,139 +529,73 @@
             const note = noteText.value; 
 
             if (toggleOverlayCheckbox.checked) { 
-                const metrics = calculateOverlayMetrics(
-                    photoCanvas.width, 
-                    photoCanvas.height, 
-                    orderNumber, 
-                    prefix, 
-                    shotNumber, 
-                    note
-                );
-
+                const metrics = calculateOverlayMetrics(photoCanvas.width, photoCanvas.height, orderNumber, prefix, shotNumber, note);
                 context.fillStyle = 'rgba(255, 255, 255, 0.7)'; 
                 roundRect(context, metrics.tightBoxX, metrics.boxY, metrics.tightBoxWidth, metrics.boxHeight, metrics.borderRadius); 
                 
-                // --- Draw Incremental Shot Number First (Largest, Green, Centered) ---
+                let currentY, currentTextBottomY;
+                
                 context.font = `bold ${metrics.numberFontSize}px Arial`; 
                 context.fillStyle = 'green';
                 context.textAlign = 'center';
                 context.textBaseline = 'middle'; 
-
-                let currentY = metrics.boxY + metrics.textPaddingY + (metrics.numberLineHeight / 2); 
+                currentY = metrics.boxY + metrics.textPaddingY + (metrics.numberLineHeight / 2); 
                 context.fillText(shotNumber, metrics.tightBoxX + (metrics.tightBoxWidth / 2), currentY); 
-                let currentTextBottomY = currentY + (metrics.numberLineHeight / 2); 
+                currentTextBottomY = currentY + (metrics.numberLineHeight / 2); 
 
-                // --- Draw Order Number Second (Blue, Centered) ---
                 context.font = `bold ${metrics.orderNumFontSize}px Arial`; 
                 context.fillStyle = 'blue'; 
-                context.textAlign = 'center';
-                context.textBaseline = 'middle'; 
-
-                currentTextBottomY += metrics.spaceBetweenLines; // Space after Shot Number
+                currentTextBottomY += metrics.spaceBetweenLines;
                 currentY = currentTextBottomY + (metrics.orderNumLineHeight / 2); 
                 context.fillText(orderNumber, metrics.tightBoxX + (metrics.tightBoxWidth / 2), currentY); 
                 currentTextBottomY = currentY + (metrics.orderNumLineHeight / 2); 
 
-
-                // --- Draw Prefix Third (Smaller, Red, Wrapped) ---
                 context.font = `bold ${metrics.prefixFontSize}px Arial`; 
                 context.fillStyle = 'red'; 
-                context.textAlign = 'center';
-                context.textBaseline = 'middle'; 
-                
-                const tempDrawContext = photoCanvas.getContext('2d'); 
-                tempDrawContext.font = `bold ${metrics.prefixFontSize}px Arial`; 
-                
-                const words = prefix.split(' ');
-                let linesToDraw = [];
-                let lineBuffer = '';
-                const prefixMaxWidthPx = (metrics.tightBoxWidth - (metrics.textPaddingX * 2)) * 0.75; 
-
-                for (let n = 0; n < words.length; n++) {
-                    const testLine = lineBuffer + words[n] + ' ';
-                    if (tempDrawContext.measureText(testLine).width > prefixMaxWidthPx && n > 0) { 
-                        linesToDraw.push(lineBuffer.trim());
-                        lineBuffer = words[n] + ' ';
-                    } else {
-                        lineBuffer = testLine;
-                    }
-                }
-                linesToDraw.push(lineBuffer.trim()); 
-
-                if (linesToDraw.length > 2) {
-                    linesToDraw = [linesToDraw[0], linesToDraw[1] + '...']; 
-                } else if (linesToDraw.length === 1 && tempDrawContext.measureText(linesToDraw[0]).width > prefixMaxWidthPx) {
-                    linesToDraw[0] = linesToDraw[0].substring(0, Math.floor(prefixMaxWidthPx / (metrics.prefixFontSize * 0.6))) + '...';
-                } else if (linesToDraw.length === 2 && tempDrawContext.measureText(linesToDraw[1]).width > prefixMaxWidthPx) {
-                    linesToDraw[1] = linesToDraw[1].substring(0, Math.floor(prefixMaxWidthPx / (metrics.prefixFontSize * 0.6))) + '...';
-                }
-                
-                currentTextBottomY += metrics.spaceBetweenLines; // Space after Order Number
-
+                currentTextBottomY += metrics.spaceBetweenLines;
                 currentY = currentTextBottomY + (metrics.prefixLineHeight / 2); 
-                context.fillText(linesToDraw[0], metrics.tightBoxX + (metrics.tightBoxWidth / 2), currentY); 
+                context.fillText(prefix, metrics.tightBoxX + (metrics.tightBoxWidth / 2), currentY); 
                 currentTextBottomY = currentY + (metrics.prefixLineHeight / 2); 
-
-                if (linesToDraw.length > 1) { 
-                    currentTextBottomY += metrics.spaceBetweenLines; 
-                    currentY = currentTextBottomY + (metrics.prefixLineHeight / 2); 
-                    context.fillText(linesToDraw[1], metrics.tightBoxX + (metrics.tightBoxWidth / 2), currentY); 
-                    currentTextBottomY = currentY + (metrics.prefixLineHeight / 2); 
-                }
                 
-                // --- Draw Note Fourth (if exists) ---
                 if (note) { 
-                    context.font = `${metrics.noteFontSize}px Arial`; 
-                    context.fillStyle = 'black'; 
-                    context.textAlign = 'center';
-                    context.textBaseline = 'middle';
-
-                    currentTextBottomY += metrics.spaceBetweenLines; // Space after Prefix
+                    // [MODIFIED] Use a normal, positive space before drawing the note
+                    const normalSpace = Math.max(10, photoCanvas.height / 100);
+                    currentTextBottomY += normalSpace;
+                    
                     const noteTextCenterY = currentTextBottomY + (metrics.noteLineHeight / 2);
+                    context.font = `${metrics.noteFontSize}px Arial`;
+                    
+                    // [NEW] Add red highlight behind the note text
+                    const noteWidth = context.measureText(note).width;
+                    const highlightPadding = 10;
+                    context.fillStyle = 'rgba(255, 0, 0, 0.5)'; // Semi-transparent red
+                    context.fillRect(
+                        metrics.tightBoxX + (metrics.tightBoxWidth / 2) - (noteWidth / 2) - highlightPadding,
+                        noteTextCenterY - (metrics.noteLineHeight / 2),
+                        noteWidth + (highlightPadding * 2),
+                        metrics.noteLineHeight
+                    );
+
+                    context.fillStyle = 'black'; // Set text color for note
                     context.fillText(note, metrics.tightBoxX + (metrics.tightBoxWidth / 2), noteTextCenterY); 
                 }
                 
-                // Filename if overlay is ON: Use Order Number + Shot Number
-                let orderNumForFilename = orderNumber.trim();
-                if (orderNumForFilename.length === 0) {
-                    orderNumForFilename = "NoOrder"; // Fallback
-                }
-                orderNumForFilename = orderNumForFilename.replace(/[^a-zA-Z0-9-]/g, '_').substring(0, 20); // Sanitize and shorten
-                finalFilename = `${orderNumForFilename}_${currentNumber}.png`;
-
-            } else { // Overlay is OFF: Use Order Number + Timestamp
-                let orderNumForFilename = orderNumber.trim();
-                if (orderNumForFilename.length === 0) {
-                    orderNumForFilename = "NoOrder"; // Fallback
-                }
-                orderNumForFilename = orderNumForFilename.replace(/[^a-zA-Z0-9-]/g, '_').substring(0, 20); // Sanitize and shorten
-
-                const now = new Date();
-                const timestamp = now.getFullYear().toString() +
-                                  (now.getMonth() + 1).toString().padStart(2, '0') +
-                                  now.getDate().toString().padStart(2, '0') + '_' +
-                                  now.getHours().toString().padStart(2, '0') +
-                                  now.getMinutes().toString().padStart(2, '0') +
-                                  now.getSeconds().toString().padStart(2, '0');
-                finalFilename = `${orderNumForFilename}_${timestamp}.png`; 
+                finalFilename = `${orderNumber.replace(/[^a-zA-Z0-9-]/g, '_') || "NoOrder"}_${currentNumber}.png`;
+            } else {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                finalFilename = `${orderNumber.replace(/[^a-zA-Z0-9-]/g, '_') || "NoOrder"}_${timestamp}.png`; 
             }
 
-            // Always increment number regardless of overlay toggle
             updateNumberDisplay(currentNumber + 1);
-
-            const imageURI = photoCanvas.toDataURL('image/png'); // Get image data from photoCanvas
             const a = document.createElement('a');
-            a.href = imageURI;
+            a.href = photoCanvas.toDataURL('image/png');
             a.download = finalFilename; 
-            document.body.appendChild(a);
             a.click();
-            document.body.removeChild(a);
-
-            messageElement.textContent = `Photo captured: ${finalFilename}` + (toggleOverlayCheckbox.checked ? '' : ' (Overlay OFF)');
+            messageElement.textContent = `Photo captured: ${finalFilename}`;
         }
 
-        shootButtonLeft.addEventListener('click', handlePhotoCapture);
-        shootButtonRight.addEventListener('click', handlePhotoCapture);
+        shootButton.addEventListener('click', handlePhotoCapture);
+        startCamera(currentFacingMode);
     </script>
 </body>
 </html>
