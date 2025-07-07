@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check in</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        /* Basic Reset & Body Styling */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh; /* Full viewport height */
+            background-color: #f0f2f5; /* Light background */
+            color: #333;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin: 20px 0;
+            font-size: 1.5em; /* Slightly smaller for mobile */
+            text-align: center;
+        }
+
+        /* Video Container - Now also holds all overlays */
+        #video-container {
+            position: relative;
+            width: 95vw; /* Almost full width of the viewport */
+            max-width: 700px; /* Kept at a reasonable max width for overall page balance */
+            height: auto; /* Allow height to be determined by aspect ratio and width */
+            aspect-ratio: 9 / 16; /* Set aspect ratio to 9:16 (portrait) */
+            background-color: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        video {
+            width: 100%;
+            height: 100%; /* Fill the container */
+            display: block;
+            object-fit: cover; /* Cover the container, cropping if necessary */
+        }
+
+        canvas {
+            display: none; /* Hidden until needed for processing */
+        }
+
+        /* Overlay Guide Box */
+        #overlayGuide {
+            position: absolute;
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Adjust for its own width */
+            background-color: rgba(255, 255, 255, 0.3);
+            border: 1px dashed rgba(255, 255, 255, 0.5);
+            z-index: 10;
+            pointer-events: none;
+            box-sizing: border-box;
+        }
+
+        /* [MODIFIED] Styling for the main capture controls container */
+        #captureControls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            margin: 0 0 20px 0;
+            width: 95%;
+            max-width: 700px;
+            flex-wrap: wrap; /* Allows controls to wrap on smaller screens */
+        }
+
+        /* [MODIFIED] Shoot button is now a flex item, not absolutely positioned */
+        .shoot-button {
+            width: 70px; /* Slightly larger */
+            height: 70px;
+            border-radius: 50%;
+            background-color: #dc3545;
+            color: white;
+            font-size: 2.5em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 4px solid white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+            z-index: 30;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            -webkit-tap-highlight-color: transparent;
+            /* Order property to place button in the middle */
+            order: 2;
+        }
+
+        .shoot-button:active {
+            background-color: #c82333;
+            transform: scale(0.95);
+        }
+
+        /* Settings Overlay (input fields and number controls) */
+        #settingsOverlay {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 500px;
+            padding: 15px;
+            box-sizing: border-box;
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 25;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        #settingsOverlay .input-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        #settingsOverlay label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        #settingsOverlay input[type="text"] {
+            padding: 8px 10px;
+            border: 1px solid #cdd4da;
+            border-radius: 5px;
+            width: calc(100% - 20px);
+            font-size: 0.9em;
+            outline: none;
+            transition: border-color 0.2s ease-in-out;
+            background-color: #fff;
+            color: #333;
+        }
+
+        #settingsOverlay input[type="text"]:focus {
+            border-color: #007bff;
+        }
+
+        /* [MODIFIED] Number control group is now a flex item in #captureControls */
+        .number-control-group {
+            display: flex;
+            align-items: center;
+            gap: 0px;
+            order: 1; /* Place to the left of the shoot button */
+        }
+
+        .number-control-group button {
+            width: 45px;
+            height: 45px;
+            font-size: 1.8em;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #6c757d;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .number-control-group button:active {
+            background-color: #5a6268;
+        }
+
+        #currentNumberDisplay {
+            text-align: center;
+            padding: 8px 10px;
+            border: 1px solid #cdd4da;
+            border-radius: 5px;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #28a745;
+            background-color: #f8f9fa;
+            min-width: 60px;
+            box-sizing: border-box;
+        }
+        
+        /* [MODIFIED] Toggle Switch is now a flex item in #captureControls */
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            order: 3; /* Place to the right of the shoot button */
+        }
+        .toggle-switch label {
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 45px;
+            height: 25px;
+            flex-shrink: 0;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 19px;
+            width: 19px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+        input:checked + .slider:before {
+            -webkit-transform: translateX(20px);
+            -ms-transform: translateX(20px);
+            transform: translateX(20px);
+        }
+
+        /* General message outside video container */
+        p#message {
+            margin-top: 10px;
+            color: #28a745;
+            font-weight: bold;
+            text-align: center;
+            font-size: 0.9em;
+            min-height: 20px;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Check in</h1>
+
+    <div id="video-container">
+        <video id="cameraFeed" autoplay playsinline></video>
+        <div id="overlayGuide"></div> 
+        <canvas id="photoCanvas"></canvas>
+        
+        <div id="settingsOverlay">
+            <div class="input-group">
+                <label for="orderNumberText">Order Number:</label>
+                <input type="text" id="orderNumberText" placeholder="e.g., PO12345" /> 
+            </div>
+
+            <div class="input-group">
+                <label for="prefixText">Prefix Text:</label>
+                <input type="text" id="prefixText" value="" placeholder="supplier" /> 
+            </div>
+
+            <div class="input-group">
+                <label for="noteText">Note (optional):</label>
+                <input type="text" id="noteText" placeholder="damaged etc" /> 
+            </div>
+        </div>
+    </div>
+    
+    <div id="captureControls">
+        <button id="shootButton" class="shoot-button">&#128247;</button> 
+
+        <div class="number-control-group">
+            <button id="decrementNumber">-</button>
+            <span id="currentNumberDisplay">1</span> 
+            <button id="incrementNumber">+</button>
+        </div>
+
+        <div class="toggle-switch">
+            <label for="toggleOverlay">Overlay</label>
+            <label class="switch">
+                <input type="checkbox" id="toggleOverlay" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <p id="message"></p>
+
+    <script>
+        console.log("Script execution started.");
+
+        const cameraFeed = document.getElementById('cameraFeed');
+        const photoCanvas = document.getElementById('photoCanvas');
+        const overlayGuide = document.getElementById('overlayGuide'); 
+        
+        const shootButton = document.getElementById('shootButton');
+        
+        const orderNumberText = document.getElementById('orderNumberText'); 
+        const prefixText = document.getElementById('prefixText');
+        const noteText = document.getElementById('noteText'); 
+        const currentNumberDisplay = document.getElementById('currentNumberDisplay');
+        const decrementNumberButton = document.getElementById('decrementNumber');
+        const incrementNumberButton = document.getElementById('incrementNumber');
+        const toggleOverlayCheckbox = document.getElementById('toggleOverlay'); 
+        const messageElement = document.getElementById('message');
+        let currentNumber = 1; 
+        let currentFacingMode = 'environment'; 
+
+        const TARGET_OUTPUT_WIDTH = 1080; 
+        const TARGET_OUTPUT_HEIGHT = 1920; 
+
+        function updateNumberDisplay(newNumber) {
+            currentNumber = Math.max(0, newNumber); 
+            currentNumberDisplay.textContent = currentNumber;
+        }
+
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius); 
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        updateNumberDisplay(currentNumber);
+
+        async function startCamera(facingMode) {
+            console.log("startCamera called with facingMode:", facingMode);
+            if (cameraFeed.srcObject) {
+                cameraFeed.srcObject.getTracks().forEach(track => track.stop());
+                cameraFeed.srcObject = null;
+            }
+            const constraintOptions = [
+                { video: { facingMode: facingMode, width: { ideal: 4096 }, height: { ideal: 4096 } } },
+                { video: { facingMode: facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } } },
+                { video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } } },
+                { video: { facingMode: facingMode } }
+            ];
+            for (let i = 0; i < constraintOptions.length; i++) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia(constraintOptions[i]);
+                    cameraFeed.srcObject = stream;
+                    const videoTrack = stream.getVideoTracks()[0];
+                    const settings = videoTrack.getSettings();
+                    currentFacingMode = settings.facingMode || facingMode;
+                    cameraFeed.style.transform = currentFacingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+                    await new Promise(resolve => cameraFeed.onloadedmetadata = resolve);
+                    messageElement.textContent = `Camera started. Actual resolution: ${settings.width}x${settings.height}. Ready!`;
+                    updateOverlayGuidePosition(); 
+                    return;
+                } catch (err) {
+                    console.error(`Attempt ${i + 1} failed: `, err.name, err.message);
+                }
+            }
+            messageElement.textContent = 'Could not start camera. Please check permissions.';
+        }
+
+        function calculateOverlayMetrics(canvasWidth, canvasHeight, orderNum, prefix, shotNum, note) { 
+            const tempCanvas = document.createElement('canvas');
+            const tempContext = tempCanvas.getContext('2d');
+
+            const numberFontSize = Math.max(80, Math.min(240, canvasWidth / 2.5)); 
+            const orderNumFontSize = (Math.max(80, Math.min(240, canvasWidth / 2.5))) / 2; 
+            const prefixFontSize = Math.max(18, Math.min(50, canvasWidth / 18)); 
+            const noteFontSize = Math.max(20, Math.min(50, canvasWidth / 20)); 
+
+            const baseLineHeightMultiplier = 1.1;
+            const spaceBetweenLines = Math.max(5, canvasHeight / 100) * -0.5;
+
+            const textPaddingX = Math.max(15, canvasWidth / 75); 
+            const textPaddingY = Math.max(12, canvasHeight / 100); 
+            const canvasMargin = Math.max(30, canvasWidth / 25); 
+
+            tempContext.font = `bold ${numberFontSize}px Arial`; 
+            const numberTextWidth = tempContext.measureText(shotNum).width;
+            const numberLineHeight = numberFontSize * baseLineHeightMultiplier;
+
+            tempContext.font = `bold ${orderNumFontSize}px Arial`; 
+            const orderNumTextWidth = tempContext.measureText(orderNum).width;
+            const orderNumLineHeight = orderNumFontSize * baseLineHeightMultiplier;
+
+            tempContext.font = `bold ${prefixFontSize}px Arial`;
+            const prefixTextWidth = tempContext.measureText(prefix).width;
+            const prefixLineHeight = prefixFontSize * baseLineHeightMultiplier;
+
+            tempContext.font = `${noteFontSize}px Arial`; 
+            const noteTextWidth = note ? tempContext.measureText(note).width : 0;
+            const noteLineHeight = note ? (noteFontSize * baseLineHeightMultiplier) : 0;
+            
+            const maxWidthForBoxContent = Math.max(numberTextWidth, orderNumTextWidth, prefixTextWidth, noteTextWidth); 
+            const tightBoxWidth = maxWidthForBoxContent + (textPaddingX * 2); 
+
+            let totalTextHeight = 0;
+            
+            totalTextHeight = numberLineHeight; 
+            totalTextHeight += spaceBetweenLines + orderNumLineHeight; 
+            
+            let linesForPrefixHeight = 1;
+            tempContext.font = `bold ${prefixFontSize}px Arial`;
+            const availableTextWidthForPrefix = tightBoxWidth - (textPaddingX * 2); 
+            if (tempContext.measureText(prefix).width > (availableTextWidthForPrefix * 0.75)) { 
+                linesForPrefixHeight = 2;
+            }
+
+            totalTextHeight += spaceBetweenLines + (prefixLineHeight * linesForPrefixHeight);
+            
+            // [MODIFIED] Use a normal, positive space for the note
+            if (note) { 
+                const normalSpace = Math.max(10, canvasHeight / 100);
+                totalTextHeight += normalSpace + noteLineHeight;
+            }
+            
+            const boxHeight = totalTextHeight + (textPaddingY * 2);
+            const borderRadius = Math.max(15, canvasWidth / 40); 
+            const guideBoxWidth = Math.max(tightBoxWidth, maxWidthForBoxContent * 3 + (textPaddingX * 2)); 
+            let boxY = canvasHeight - canvasMargin - boxHeight;
+            const minAllowedY = (2/3) * canvasHeight;
+            if (boxY < minAllowedY) {
+                boxY = minAllowedY;
+            }
+            const tightBoxX = (canvasWidth / 2) - (tightBoxWidth / 2);
+
+            return {
+                tightBoxX, tightBoxWidth, guideBoxWidth, boxY, boxHeight, borderRadius,
+                orderNumFontSize, numberFontSize, prefixFontSize, noteFontSize, 
+                orderNumLineHeight, numberLineHeight, prefixLineHeight, noteLineHeight, 
+                textPaddingX, textPaddingY, spaceBetweenLines
+            };
+        }
+
+        function updateOverlayGuidePosition() {
+            if (cameraFeed.videoWidth === 0) return;
+            const videoRect = cameraFeed.getBoundingClientRect();
+            const metrics = calculateOverlayMetrics(videoRect.width, videoRect.height, orderNumberText.value, prefixText.value, currentNumber.toString(), noteText.value);
+            overlayGuide.style.display = 'block';
+            overlayGuide.style.width = `${metrics.guideBoxWidth}px`; 
+            overlayGuide.style.height = `${metrics.boxHeight}px`;
+            overlayGuide.style.top = `${metrics.boxY}px`; 
+            overlayGuide.style.borderRadius = `${metrics.borderRadius}px`;
+            overlayGuide.style.transform = currentFacingMode === 'user' ? 'translateX(-50%) scaleX(-1)' : 'translateX(-50%) scaleX(1)';
+        }
+
+        decrementNumberButton.addEventListener('click', () => updateNumberDisplay(currentNumber - 1));
+        incrementNumberButton.addEventListener('click', () => updateNumberDisplay(currentNumber + 1));
+        orderNumberText.addEventListener('input', updateOverlayGuidePosition); 
+        prefixText.addEventListener('input', updateOverlayGuidePosition);
+        noteText.addEventListener('input', updateOverlayGuidePosition);
+        window.addEventListener('resize', updateOverlayGuidePosition);
+        cameraFeed.addEventListener('loadeddata', updateOverlayGuidePosition); 
+        cameraFeed.addEventListener('resize', updateOverlayGuidePosition); 
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') startCamera(currentFacingMode);
+        });
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) startCamera(currentFacingMode);
+        });
+
+        function handlePhotoCapture() {
+            if (!cameraFeed.srcObject || cameraFeed.videoWidth === 0) {
+                messageElement.textContent = 'Camera not ready. Please wait.';
+                return;
+            }
+            const context = photoCanvas.getContext('2d');
+            photoCanvas.width = TARGET_OUTPUT_WIDTH;
+            photoCanvas.height = TARGET_OUTPUT_HEIGHT;
+            
+            const videoAspectRatio = cameraFeed.videoWidth / cameraFeed.videoHeight;
+            const targetAspectRatio = TARGET_OUTPUT_WIDTH / TARGET_OUTPUT_HEIGHT;
+            let sx, sy, sWidth, sHeight;
+            if (videoAspectRatio > targetAspectRatio) {
+                sHeight = cameraFeed.videoHeight;
+                sWidth = cameraFeed.videoHeight * targetAspectRatio;
+                sx = (cameraFeed.videoWidth - sWidth) / 2;
+                sy = 0;
+            } else {
+                sWidth = cameraFeed.videoWidth;
+                sHeight = cameraFeed.videoWidth / targetAspectRatio;
+                sy = (cameraFeed.videoHeight - sHeight) / 2;
+                sx = 0;
+            }
+            context.save(); 
+            if (currentFacingMode === 'user') { 
+                context.translate(photoCanvas.width, 0); 
+                context.scale(-1, 1); 
+            }
+            context.drawImage(cameraFeed, sx, sy, sWidth, sHeight, 0, 0, photoCanvas.width, photoCanvas.height); 
+            context.restore(); 
+
+            let finalFilename = '';
+            const orderNumber = orderNumberText.value; 
+            const prefix = prefixText.value;
+            const shotNumber = currentNumber.toString();
+            const note = noteText.value; 
+
+            if (toggleOverlayCheckbox.checked) { 
+                const metrics = calculateOverlayMetrics(photoCanvas.width, photoCanvas.height, orderNumber, prefix, shotNumber, note);
+                context.fillStyle = 'rgba(255, 255, 255, 0.7)'; 
+                roundRect(context, metrics.tightBoxX, metrics.boxY, metrics.tightBoxWidth, metrics.boxHeight, metrics.borderRadius); 
+                
+                let currentY, currentTextBottomY;
+                
+                context.font = `bold ${metrics.numberFontSize}px Arial`; 
+                context.fillStyle = 'green';
+                context.textAlign = 'center';
+                context.textBaseline = 'middle'; 
+                currentY = metrics.boxY + metrics.textPaddingY + (metrics.numberLineHeight / 2); 
+                context.fillText(shotNumber, metrics.tightBoxX + (metrics.tightBoxWidth / 2), currentY); 
+                currentTextBottomY = currentY + (metrics.numberLineHeight / 2); 
+
+                context.font = `bold ${metrics.orderNumFontSize}px Arial`; 
+                context.fillStyle = 'blue'; 
+                currentTextBottomY += metrics.spaceBetweenLines;
+                currentY = currentTextBottomY + (metrics.orderNumLineHeight / 2); 
+                context.fillText(orderNumber, metrics.tightBoxX + (metrics.tightBoxWidth / 2), currentY); 
+                currentTextBottomY = currentY + (metrics.orderNumLineHeight / 2); 
+
+                context.font = `bold ${metrics.prefixFontSize}px Arial`; 
+                context.fillStyle = 'red'; 
+                currentTextBottomY += metrics.spaceBetweenLines;
+                currentY = currentTextBottomY + (metrics.prefixLineHeight / 2); 
+                context.fillText(prefix, metrics.tightBoxX + (metrics.tightBoxWidth / 2), currentY); 
+                currentTextBottomY = currentY + (metrics.prefixLineHeight / 2); 
+                
+                if (note) { 
+                    // [MODIFIED] Use a normal, positive space before drawing the note
+                    const normalSpace = Math.max(10, photoCanvas.height / 100);
+                    currentTextBottomY += normalSpace;
+                    
+                    const noteTextCenterY = currentTextBottomY + (metrics.noteLineHeight / 2);
+                    context.font = `${metrics.noteFontSize}px Arial`;
+                    
+                    // [NEW] Add red highlight behind the note text
+                    const noteWidth = context.measureText(note).width;
+                    const highlightPadding = 10;
+                    context.fillStyle = 'rgba(255, 0, 0, 0.5)'; // Semi-transparent red
+                    context.fillRect(
+                        metrics.tightBoxX + (metrics.tightBoxWidth / 2) - (noteWidth / 2) - highlightPadding,
+                        noteTextCenterY - (metrics.noteLineHeight / 2),
+                        noteWidth + (highlightPadding * 2),
+                        metrics.noteLineHeight
+                    );
+
+                    context.fillStyle = 'black'; // Set text color for note
+                    context.fillText(note, metrics.tightBoxX + (metrics.tightBoxWidth / 2), noteTextCenterY); 
+                }
+                
+                finalFilename = `${orderNumber.replace(/[^a-zA-Z0-9-]/g, '_') || "NoOrder"}_${currentNumber}.png`;
+            } else {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                finalFilename = `${orderNumber.replace(/[^a-zA-Z0-9-]/g, '_') || "NoOrder"}_${timestamp}.png`; 
+            }
+
+            updateNumberDisplay(currentNumber + 1);
+            const a = document.createElement('a');
+            a.href = photoCanvas.toDataURL('image/png');
+            a.download = finalFilename; 
+            a.click();
+            messageElement.textContent = `Photo captured: ${finalFilename}`;
+        }
+
+        shootButton.addEventListener('click', handlePhotoCapture);
+        startCamera(currentFacingMode);
+    </script>
+</body>
+</html>
